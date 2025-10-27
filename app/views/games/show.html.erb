@@ -1,0 +1,325 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card">
+        <div class="card-header">
+          <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Partida: <%= @game.player1 %> vs <%= @game.player2 %></h2>
+            <%= link_to "Volver a Partidas", games_path, class: "btn btn-outline-secondary" %>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Información de los Jugadores -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0">
+                    <%= @game.player1 %> 
+                    <span class="badge bg-light text-primary fs-6">(<%= @game.player1_symbol %>)</span>
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <p class="mb-0">
+                    <% if @current_player == @game.player1_symbol && !@game_over %>
+                      <span class="badge bg-warning text-dark">¡Tu turno!</span>
+                    <% elsif @game_over && @game.winner == @game.player1_symbol %>
+                      <span class="badge bg-success">¡Ganador!</span>
+                    <% else %>
+                      <span class="text-muted">Esperando...</span>
+                    <% end %>
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                  <h5 class="mb-0">
+                    <%= @game.player2 %> 
+                    <span class="badge bg-light text-success fs-6">(<%= @game.player2_symbol %>)</span>
+                    <% if @game.ai_game? %>
+                      <span class="badge bg-dark ms-2"><i class="fas fa-robot"></i> Máquina</span>
+                    <% end %>
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <p class="mb-0">
+                    <% if @current_player == @game.player2_symbol && !@game_over %>
+                      <span class="badge bg-warning text-dark">¡Tu turno!</span>
+                    <% elsif @game_over && @game.winner == @game.player2_symbol %>
+                      <span class="badge bg-success">¡Ganador!</span>
+                    <% else %>
+                      <span class="text-muted">Esperando...</span>
+                    <% end %>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estado del Juego -->
+          <div class="row mb-4">
+            <div class="col-md-12">
+              <div class="alert <%= @game_over ? 'alert-info' : 'alert-warning' %>">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>Estado:</strong> 
+                    <span class="badge <%= @game.status == 'active' ? 'bg-success' : 'bg-secondary' %>">
+                      <%= @game.status.humanize %>
+                    </span>
+                  </div>
+                  
+                  <% unless @game_over %>
+                    <div>
+                      <strong>Turno actual:</strong> 
+                      <span class="badge bg-primary fs-6">
+                        <%= @current_player_name %> (<%= @current_player %>)
+                      </span>
+                    </div>
+                  <% end %>
+                  
+                  <% if @game.winner.present? %>
+                    <div>
+                      <strong>Ganador:</strong> 
+                      <span class="badge bg-warning text-dark fs-6">
+                        <%= @game.winner_name %> (<%= @game.winner %>)
+                      </span>
+                    </div>
+                  <% elsif @game.status == 'draw' %>
+                    <div>
+                      <strong>Resultado:</strong> 
+                      <span class="badge bg-info fs-6">Empate</span>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tablero del juego -->
+          <div class="text-center mb-4">
+            <h4>Tablero de Juego</h4>
+            <div class="game-board d-inline-block">
+              <% @board.each_with_index do |row, row_index| %>
+                <div class="board-row">
+                  <% row.each_with_index do |cell, col_index| %>
+                    <% is_clickable = !@game_over && cell.blank? %>
+                    <div class="board-cell <%= 'clickable' if is_clickable %>" 
+                         data-row="<%= row_index %>" 
+                         data-col="<%= col_index %>"
+                         data-player="<%= @current_player %>"
+                         data-game-id="<%= @game.id %>"
+                         data-clickable="<%= is_clickable %>">
+                      <span class="cell-content <%= cell == 'X' ? 'text-primary' : 'text-success' %>">
+                        <%= cell %>
+                      </span>
+                    </div>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Controles del juego -->
+          <div class="text-center">
+            <!-- Botones de control siempre visibles -->
+            <div class="mb-4">
+              <div class="btn-group" role="group">
+                <%= link_to restart_game_path(@game), 
+                    method: :patch, 
+                    class: "btn btn-warning btn-lg",
+                    data: { 
+                      confirm: "¿Estás seguro de que quieres reiniciar el juego? Se perderán todos los movimientos actuales.",
+                      turbo_method: :patch
+                    } do %>
+                  <i class="fas fa-redo-alt me-2"></i> Reiniciar Juego
+                <% end %>
+                
+                <%= link_to new_game_path, class: "btn btn-primary btn-lg" do %>
+                  <i class="fas fa-plus me-2"></i> Nueva Partida
+                <% end %>
+              </div>
+            </div>
+            
+            <% if @game_over %>
+              <div class="alert alert-info">
+                <% if @game.winner %>
+                  <h4><i class="fas fa-trophy me-2"></i>¡<%= @game.winner_name %> ha ganado la partida!</h4>
+                  <p class="mb-0">Símbolo ganador: <strong><%= @game.winner %></strong></p>
+                <% else %>
+                  <h4><i class="fas fa-handshake me-2"></i>¡La partida ha terminado en empate!</h4>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="alert alert-light">
+                <h5><i class="fas fa-info-circle me-2"></i>Instrucciones:</h5>
+                <p class="mb-0">
+                  Es el turno de <strong><%= @current_player_name %></strong> 
+                  (símbolo: <strong><%= @current_player %></strong>). 
+                  Haz clic en una celda vacía para hacer tu movimiento.
+                </p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.game-board {
+  border: 3px solid #333;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.board-row {
+  display: flex;
+}
+
+.board-cell {
+  width: 100px;
+  height: 100px;
+  border: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  cursor: default;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.board-cell.clickable {
+  cursor: pointer;
+}
+
+.board-cell.clickable:hover {
+  background-color: #e9ecef;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.cell-content {
+  font-weight: bold;
+}
+
+.cell-content.text-primary {
+  color: #0d6efd !important;
+}
+
+.cell-content.text-success {
+  color: #198754 !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('JavaScript cargado correctamente');
+  console.log('Estado del juego:', {
+    gameOver: <%= @game_over %>,
+    currentPlayer: '<%= @current_player %>',
+    currentPlayerName: '<%= @current_player_name %>',
+    gameId: <%= @game.id %>
+  });
+  
+  const cells = document.querySelectorAll('.board-cell');
+  console.log('Total de celdas encontradas:', cells.length);
+  
+  const clickableCells = document.querySelectorAll('.board-cell.clickable');
+  console.log('Celdas clickables encontradas:', clickableCells.length);
+  
+  // Mostrar información de cada celda
+  cells.forEach((cell, index) => {
+    const isClickable = cell.classList.contains('clickable');
+    const content = cell.querySelector('.cell-content').textContent.trim();
+    console.log(`Celda ${index}:`, {
+      row: cell.dataset.row,
+      col: cell.dataset.col,
+      player: cell.dataset.player,
+      gameId: cell.dataset.gameId,
+      clickable: isClickable,
+      content: content || '(vacía)'
+    });
+  });
+  
+  clickableCells.forEach((cell, index) => {
+    console.log(`Configurando evento para celda clickable ${index}`);
+    
+    cell.addEventListener('click', function(e) {
+      e.preventDefault();
+      console.log('Clic detectado en celda clickable:', {
+        row: this.dataset.row,
+        col: this.dataset.col,
+        player: this.dataset.player,
+        gameId: this.dataset.gameId
+      });
+      
+      const row = this.dataset.row;
+      const col = this.dataset.col;
+      const player = this.dataset.player;
+      const gameId = this.dataset.gameId;
+      
+      // Crear formulario para enviar el movimiento
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/games/${gameId}/move`;
+      
+      console.log('Formulario creado con acción:', form.action);
+      
+      // Agregar token CSRF
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+      console.log('CSRF Token encontrado:', csrfToken ? 'Sí' : 'No');
+      
+      const csrfInput = document.createElement('input');
+      csrfInput.type = 'hidden';
+      csrfInput.name = 'authenticity_token';
+      csrfInput.value = csrfToken;
+      form.appendChild(csrfInput);
+      
+      // Agregar método PATCH (Rails usa un campo hidden para esto)
+      const methodInput = document.createElement('input');
+      methodInput.type = 'hidden';
+      methodInput.name = '_method';
+      methodInput.value = 'PATCH';
+      form.appendChild(methodInput);
+      // Agregar parámetros del movimiento
+      // Agregar parámetros del movimiento
+      const rowInput = document.createElement('input');
+      rowInput.type = 'hidden';
+      rowInput.name = 'row';
+      rowInput.value = row;
+      form.appendChild(rowInput);
+      
+      const colInput = document.createElement('input');
+      colInput.type = 'hidden';
+      colInput.name = 'col';
+      colInput.value = col;
+      form.appendChild(colInput);
+      
+      const playerInput = document.createElement('input');
+      playerInput.type = 'hidden';
+      playerInput.name = 'player';
+      playerInput.value = player;
+      form.appendChild(playerInput);
+      
+      console.log('Formulario preparado con datos:', {
+        row: row,
+        col: col,
+        player: player,
+        gameId: gameId
+      });
+      
+      // Enviar formulario
+      document.body.appendChild(form);
+      console.log('Enviando formulario...');
+      form.submit();
+    });
+  });
+});
+</script>

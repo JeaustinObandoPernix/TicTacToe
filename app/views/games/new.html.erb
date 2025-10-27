@@ -1,0 +1,214 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="mb-0">Nueva Partida de TicTacToe</h2>
+        </div>
+        <div class="card-body">
+          <%= form_with model: @game, local: true do |form| %>
+            <% if @game.errors.any? %>
+              <div class="alert alert-danger">
+                <h4><%= pluralize(@game.errors.count, "error") %> impidieron guardar esta partida:</h4>
+                <ul>
+                  <% @game.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+
+            <!-- Selección de Tipo de Juego -->
+            <div class="card mb-3 border-warning">
+              <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-gamepad me-2"></i>Tipo de Partida</h5>
+              </div>
+              <div class="card-body">
+                <div class="form-check mb-2">
+                  <%= form.radio_button :game_type, 'human', class: "form-check-input", id: "game_type_human", checked: true %>
+                  <%= form.label "game_type_human", "Contra otra persona", class: "form-check-label" %>
+                </div>
+                <div class="form-check">
+                  <%= form.radio_button :game_type, 'ai', class: "form-check-input", id: "game_type_ai" %>
+                  <%= form.label "game_type_ai", "Contra la Máquina", class: "form-check-label" %>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Información del Jugador 1 -->
+              <div class="col-md-6">
+                <div class="card border-primary">
+                  <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Jugador 1</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <%= form.label :player1, "Nombre del Jugador 1", class: "form-label" %>
+                      <%= form.text_field :player1, class: "form-control", placeholder: "Ej: Ana", required: true %>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <%= form.label :player1_symbol, "Símbolo del Jugador 1", class: "form-label" %>
+                      <div class="d-flex gap-2">
+                        <div class="form-check">
+                          <%= form.radio_button :player1_symbol, 'X', class: "form-check-input", id: "player1_x", required: true %>
+                          <%= form.label "player1_x", "X", class: "form-check-label" %>
+                        </div>
+                        <div class="form-check">
+                          <%= form.radio_button :player1_symbol, 'O', class: "form-check-input", id: "player1_o" %>
+                          <%= form.label "player1_o", "O", class: "form-check-label" %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Información del Jugador 2 -->
+              <div class="col-md-6" id="player2-section">
+                <div class="card border-success">
+                  <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Jugador 2</h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <%= form.label :player2, "Nombre del Jugador 2", class: "form-label" %>
+                      <%= form.text_field :player2, class: "form-control", placeholder: "Ej: Carlos", required: true %>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <%= form.label :player2_symbol, "Símbolo del Jugador 2", class: "form-label" %>
+                      <div class="d-flex gap-2">
+                        <div class="form-check">
+                          <%= form.radio_button :player2_symbol, 'X', class: "form-check-input", id: "player2_x" %>
+                          <%= form.label "player2_x", "X", class: "form-check-label" %>
+                        </div>
+                        <div class="form-check">
+                          <%= form.radio_button :player2_symbol, 'O', class: "form-check-input", id: "player2_o" %>
+                          <%= form.label "player2_o", "O", class: "form-check-label" %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Configuración del Juego -->
+            <div class="card mt-3 border-info">
+              <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Configuración del Juego</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <%= form.label :starting_player, "¿Quién empieza?", class: "form-label" %>
+                  <div class="d-flex gap-2">
+                    <div class="form-check">
+                      <%= form.radio_button :starting_player, 'X', class: "form-check-input", id: "start_x", required: true %>
+                      <%= form.label "start_x", "Jugador con X", class: "form-check-label" %>
+                    </div>
+                    <div class="form-check">
+                      <%= form.radio_button :starting_player, 'O', class: "form-check-input", id: "start_o" %>
+                      <%= form.label "start_o", "Jugador con O", class: "form-check-label" %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <%= form.submit "Crear Partida", class: "btn btn-primary btn-lg" %>
+              <%= link_to "Cancelar", games_path, class: "btn btn-secondary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Manejo del tipo de juego
+  const gameTypeRadios = document.querySelectorAll('input[name="game[game_type]"]');
+  const player2Section = document.getElementById('player2-section');
+  
+  function togglePlayer2Section() {
+    const selectedGameType = document.querySelector('input[name="game[game_type]"]:checked')?.value;
+    const player2Input = document.querySelector('input[name="game[player2]"]');
+    
+    if (selectedGameType === 'ai') {
+      player2Section.style.display = 'none';
+      player2Input.removeAttribute('required');
+      // Asignar el símbolo opuesto al jugador 1
+      const player1Symbol = document.querySelector('input[name="game[player1_symbol]"]:checked')?.value;
+      if (player1Symbol) {
+        const player2Symbol = player1Symbol === 'X' ? 'O' : 'X';
+        document.querySelector(`input[id="player2_${player2Symbol.toLowerCase()}"]`).checked = true;
+      }
+    } else {
+      player2Section.style.display = 'block';
+      player2Input.setAttribute('required', 'required');
+    }
+  }
+  
+  gameTypeRadios.forEach(radio => {
+    radio.addEventListener('change', togglePlayer2Section);
+  });
+  
+  // Validación en tiempo real para evitar símbolos duplicados
+  const player1Symbols = document.querySelectorAll('input[name="game[player1_symbol]"]');
+  const player2Symbols = document.querySelectorAll('input[name="game[player2_symbol]"]');
+  
+  function updateSymbols() {
+    const player1Symbol = document.querySelector('input[name="game[player1_symbol]"]:checked')?.value;
+    const player2Symbol = document.querySelector('input[name="game[player2_symbol]"]:checked')?.value;
+    
+    if (player1Symbol && player2Symbol && player1Symbol === player2Symbol) {
+      alert('Los jugadores no pueden tener el mismo símbolo. Por favor, elige símbolos diferentes.');
+      return false;
+    }
+    
+    // Actualizar quién empieza automáticamente si no se ha seleccionado
+    const startingPlayer = document.querySelector('input[name="game[starting_player]"]:checked')?.value;
+    if (!startingPlayer && (player1Symbol || player2Symbol)) {
+      const firstSymbol = player1Symbol || player2Symbol;
+      const startRadio = document.querySelector(`input[name="game[starting_player]"][value="${firstSymbol}"]`);
+      if (startRadio) {
+        startRadio.checked = true;
+      }
+    }
+    
+    return true;
+  }
+  
+  player1Symbols.forEach(radio => {
+    radio.addEventListener('change', updateSymbols);
+  });
+  
+  player2Symbols.forEach(radio => {
+    radio.addEventListener('change', updateSymbols);
+  });
+  
+  // Validación del formulario antes de enviar
+  const form = document.querySelector('form');
+  form.addEventListener('submit', function(e) {
+    const player1Symbol = document.querySelector('input[name="game[player1_symbol]"]:checked')?.value;
+    const player2Symbol = document.querySelector('input[name="game[player2_symbol]"]:checked')?.value;
+    const startingPlayer = document.querySelector('input[name="game[starting_player]"]:checked')?.value;
+    
+    if (!player1Symbol || !player2Symbol || !startingPlayer) {
+      e.preventDefault();
+      alert('Por favor, completa todos los campos obligatorios.');
+      return false;
+    }
+    
+    if (player1Symbol === player2Symbol) {
+      e.preventDefault();
+      alert('Los jugadores no pueden tener el mismo símbolo.');
+      return false;
+    }
+  });
+});
+</script>
