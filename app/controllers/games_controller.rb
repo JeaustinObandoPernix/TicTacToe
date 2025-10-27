@@ -1,5 +1,5 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [:show, :update, :move, :restart]
+  before_action :set_game, only: [ :show, :update, :move, :restart ]
 
   def index
     @games = Game.all.order(created_at: :desc)
@@ -19,14 +19,14 @@ class GamesController < ApplicationController
 
   def create
     @game = Game.new(game_params)
-    
+
     # Si es modo AI, establecer player2 como "Máquina"
-    if @game.game_type == 'ai'
-      @game.player2 = 'Máquina'
+    if @game.game_type == "ai"
+      @game.player2 = "Máquina"
     end
-    
+
     if @game.save
-      redirect_to @game, notice: 'Partida creada exitosamente!'
+      redirect_to @game, notice: "Partida creada exitosamente!"
     else
       render :new, status: :unprocessable_entity
     end
@@ -36,7 +36,7 @@ class GamesController < ApplicationController
     row = params[:row].to_i
     col = params[:col].to_i
     player = params[:player]
-    
+
     if @game.make_move(row, col, player)
       # Verificar si el juego terminó después del movimiento del jugador
       if @game.game_over?
@@ -45,11 +45,11 @@ class GamesController < ApplicationController
         redirect_to @game, notice: message
         return
       end
-      
+
       # Si es modo AI y es turno de la IA, hacer su movimiento
       if @game.ai_game? && @game.is_ai_player?(@game.current_player) && !@game.game_over?
         @game.make_ai_move
-        
+
         if @game.game_over?
           winner_name = @game.winner_name
           message = @game.winner ? "¡#{winner_name} ha ganado!" : "¡Empate!"
@@ -57,7 +57,7 @@ class GamesController < ApplicationController
           return
         end
       end
-      
+
       redirect_to @game, notice: "Movimiento realizado"
     else
       redirect_to @game, alert: "Movimiento inválido"
@@ -66,9 +66,9 @@ class GamesController < ApplicationController
 
   def restart
     if @game.restart_game
-      redirect_to @game, notice: '¡Juego reiniciado exitosamente! El tablero se ha limpiado.'
+      redirect_to @game, notice: "¡Juego reiniciado exitosamente! El tablero se ha limpiado."
     else
-      redirect_to @game, alert: 'Error al reiniciar el juego'
+      redirect_to @game, alert: "Error al reiniciar el juego"
     end
   end
 

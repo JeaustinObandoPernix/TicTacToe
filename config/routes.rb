@@ -11,7 +11,7 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   root "games#index"
-  
+
   # Rutas para el juego TicTacToe
   resources :games do
     member do

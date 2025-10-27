@@ -16,7 +16,7 @@ games_data = [
     starting_player: "X",
     status: "completed",
     winner: "X",
-    board: [["X", "O", "X"], ["O", "X", "O"], ["X", "", ""]].to_json
+    board: [ [ "X", "O", "X" ], [ "O", "X", "O" ], [ "X", "", "" ] ].to_json
   },
   {
     player1: "María",
@@ -26,7 +26,7 @@ games_data = [
     starting_player: "X",
     status: "draw",
     winner: nil,
-    board: [["X", "O", "X"], ["O", "X", "O"], ["O", "X", "O"]].to_json
+    board: [ [ "X", "O", "X" ], [ "O", "X", "O" ], [ "O", "X", "O" ] ].to_json
   },
   {
     player1: "Pedro",
@@ -36,7 +36,7 @@ games_data = [
     starting_player: "X",
     status: "active",
     winner: nil,
-    board: [["X", "O", ""], ["", "X", ""], ["", "", ""]].to_json
+    board: [ [ "X", "O", "" ], [ "", "X", "" ], [ "", "", "" ] ].to_json
   },
   {
     player1: "Sofía",
@@ -46,7 +46,7 @@ games_data = [
     starting_player: "O",
     status: "active",
     winner: nil,
-    board: [["O", "", ""], ["", "", ""], ["", "", ""]].to_json
+    board: [ [ "O", "", "" ], [ "", "", "" ], [ "", "", "" ] ].to_json
   }
 ]
 
