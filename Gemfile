@@ -8,7 +8,7 @@ gem "sprockets-rails"
 # gem "pg", "~> 1.1"
 
 # Use sqlite3 as the database for Active Record (easier for development)
-gem "sqlite3", "~> 1.4"
+gem "sqlite3", "~> 2.8"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
